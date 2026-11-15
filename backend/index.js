@@ -24,15 +24,43 @@ function hashPassword(password) {
   return crypto.createHash("sha256").update(password).digest("hex");
 }
 
+// Database connection helper for serverless and long-running environments
+let isConnected = false;
+async function connectDB() {
+  if (isConnected || mongoose.connection.readyState >= 1) {
+    return;
+  }
+  if (!uri) {
+    console.warn("⚠️ MONGO_URL not provided in environment variables!");
+    return;
+  }
+  try {
+    await mongoose.connect(uri);
+    isConnected = true;
+    console.log("✅ MongoDB Connected");
+  } catch (err) {
+    console.error("❌ MongoDB Connection Error:", err.message);
+  }
+}
+
+connectDB();
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
+// Router supporting both direct and /api prefixed routes
+const apiRouter = express.Router();
+
 // Health check endpoint
-app.get("/health", (req, res) => {
+apiRouter.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // ================= AUTH & USER ENDPOINTS =================
 
 // Signup route
-app.post("/signup", async (req, res) => {
+apiRouter.post("/signup", async (req, res) => {
   try {
     const { username, email, password, mobile } = req.body;
     if (!username || !email || !password) {
@@ -75,7 +103,7 @@ app.post("/signup", async (req, res) => {
 });
 
 // Login route
-app.post("/login", async (req, res) => {
+apiRouter.post("/login", async (req, res) => {
   try {
     const { usernameOrEmail, password } = req.body;
     if (!usernameOrEmail || !password) {
@@ -105,7 +133,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Get user profile & funds
-app.get("/user/:username", async (req, res) => {
+apiRouter.get("/user/:username", async (req, res) => {
   try {
     const user = await UserModel.findOne({ username: req.params.username });
     if (!user) {
@@ -123,7 +151,7 @@ app.get("/user/:username", async (req, res) => {
 });
 
 // Add funds
-app.post("/funds/add", async (req, res) => {
+apiRouter.post("/funds/add", async (req, res) => {
   try {
     const { username, amount } = req.body;
     const addAmt = Number(amount);
@@ -150,7 +178,7 @@ app.post("/funds/add", async (req, res) => {
 });
 
 // Withdraw funds
-app.post("/funds/withdraw", async (req, res) => {
+apiRouter.post("/funds/withdraw", async (req, res) => {
   try {
     const { username, amount } = req.body;
     const withdrawAmt = Number(amount);
@@ -181,7 +209,7 @@ app.post("/funds/withdraw", async (req, res) => {
 // ================= PORTFOLIO & TRADING ENDPOINTS =================
 
 // Get all holdings
-app.get("/allHoldings", async (req, res) => {
+apiRouter.get("/allHoldings", async (req, res) => {
   try {
     const allHoldings = await HoldingsModel.find({});
     res.json(allHoldings);
@@ -191,7 +219,7 @@ app.get("/allHoldings", async (req, res) => {
 });
 
 // Get all positions
-app.get("/allPositions", async (req, res) => {
+apiRouter.get("/allPositions", async (req, res) => {
   try {
     const allPositions = await PositionsModel.find({});
     res.json(allPositions);
@@ -201,7 +229,7 @@ app.get("/allPositions", async (req, res) => {
 });
 
 // Get all orders
-app.get("/allOrders", async (req, res) => {
+apiRouter.get("/allOrders", async (req, res) => {
   try {
     const allOrders = await OrdersModel.find({}).sort({ _id: -1 });
     res.json(allOrders);
@@ -211,7 +239,7 @@ app.get("/allOrders", async (req, res) => {
 });
 
 // Execute / Place Order (BUY or SELL with Portfolio Mutation)
-app.post("/newOrder", async (req, res) => {
+apiRouter.post("/newOrder", async (req, res) => {
   try {
     const { name, qty, price, mode, username } = req.body;
     const numQty = Number(qty);
@@ -305,22 +333,15 @@ app.post("/newOrder", async (req, res) => {
   }
 });
 
-// MongoDB Connection
-console.log("Mongo URI configured:", uri ? "Yes" : "No");
+// Mount router on both /api (when deployed behind /api rewrite) and root /
+app.use("/api", apiRouter);
+app.use("/", apiRouter);
 
-if (!uri) {
-  console.warn("⚠️ MONGO_URL not provided in environment variables!");
+// Start server if run directly
+if (require.main === module || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
 }
 
-mongoose
-  .connect(uri)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
-
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
-  });
+module.exports = app;

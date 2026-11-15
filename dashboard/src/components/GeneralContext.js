@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import BuyActionWindow from "./BuyActionWindow";
 import SellActionWindow from "./SellActionWindow";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+import { API_BASE_URL } from "../config";
 
 const GeneralContext = React.createContext({
   openBuyWindow: (uid, price) => {},

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import GeneralContext from "./GeneralContext";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+import { API_BASE_URL } from "../config";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);

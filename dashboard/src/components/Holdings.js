@@ -3,8 +3,7 @@ import axios from "axios";
 import { VerticalGraph } from "./VerticalGraph";
 import { holdings as defaultHoldings } from "../data/data";
 import GeneralContext from "./GeneralContext";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
+import { API_BASE_URL } from "../config";
 
 const Holdings = () => {
   const [allHoldings, setAllHoldings] = useState([]);

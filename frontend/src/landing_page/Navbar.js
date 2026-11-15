@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
-const DASHBOARD_URL = process.env.REACT_APP_DASHBOARD_URL || "http://localhost:3002";
+import { DASHBOARD_URL } from "../config";
 
 function Navbar() {
   return (
@@ -12,7 +11,7 @@ function Navbar() {
       <div className="container p-2">
         <Link className="navbar-brand" to="/">
           <img
-            src="media/images/logo.svg"
+            src={`${process.env.PUBLIC_URL || ""}/media/images/logo.svg`}
             style={{ width: "25%" }}
             alt="Logo"
           />
@@ -60,8 +59,6 @@ function Navbar() {
                 <a
                   className="btn btn-primary btn-sm px-3"
                   href={DASHBOARD_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{ backgroundColor: "#387ed1", borderColor: "#387ed1" }}
                 >
                   Kite Dashboard

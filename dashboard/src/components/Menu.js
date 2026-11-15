@@ -1,8 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import GeneralContext from "./GeneralContext";
-
-const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || "http://localhost:3001";
+import { FRONTEND_URL } from "../config";
 
 const Menu = () => {
   const [selectedMenu, setSelectedMenu] = useState(0);
@@ -33,7 +32,11 @@ const Menu = () => {
 
   return (
     <div className="menu-container" style={{ position: "relative" }}>
-      <img src="logo.png" alt="Zerodha Kite Logo" style={{ width: "50px" }} />
+      <img
+        src={`${process.env.PUBLIC_URL || ""}/logo.png`}
+        alt="Zerodha Kite Logo"
+        style={{ width: "50px" }}
+      />
       <div className="menus">
         <ul>
           <li>
@@ -153,8 +156,6 @@ const Menu = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <a
                   href={FRONTEND_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{
                     fontSize: "0.85rem",
                     color: "#387ed1",

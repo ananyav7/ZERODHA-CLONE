@@ -1,9 +1,8 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import GeneralContext from "./GeneralContext";
+import { API_BASE_URL } from "../config";
 import "./BuyActionWindow.css";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
 const BuyActionWindow = ({ uid, defaultPrice = 0 }) => {
   const [stockQuantity, setStockQuantity] = useState(1);

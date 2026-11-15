@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3000";
-const DASHBOARD_URL = process.env.REACT_APP_DASHBOARD_URL || "http://localhost:3002";
+import { API_BASE_URL, DASHBOARD_URL } from "../../config";
 
 function Signup() {
   const [isLoginMode, setIsLoginMode] = useState(false);
@@ -68,7 +66,7 @@ function Signup() {
       <div className="row align-items-center justify-content-center">
         <div className="col-md-6 text-center mb-4 mb-md-0">
           <img
-            src="media/images/signup.png"
+            src={`${process.env.PUBLIC_URL || ""}/media/images/signup.png`}
             alt="Zerodha Signup"
             style={{ maxWidth: "80%", height: "auto" }}
           />
@@ -97,8 +95,6 @@ function Signup() {
               <hr />
               <a
                 href={DASHBOARD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="btn btn-primary w-100"
                 style={{ backgroundColor: "#387ed1", borderColor: "#387ed1" }}
               >
