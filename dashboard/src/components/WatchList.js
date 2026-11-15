@@ -1,30 +1,53 @@
-import React, { useState, useContext } from "react";
-
-import axios from "axios";
-
+import React, { useState, useEffect, useContext } from "react";
 import GeneralContext from "./GeneralContext";
-
 import { Tooltip, Grow } from "@mui/material";
-
 import {
   BarChartOutlined,
   KeyboardArrowDown,
   KeyboardArrowUp,
   MoreHoriz,
 } from "@mui/icons-material";
-
-import { watchlist } from "../data/data";
+import { watchlist as initialWatchlist } from "../data/data";
 import { DoughnutChart } from "./DoughnoutChart";
 
-const labels = watchlist.map((subArray) => subArray["name"]);
-
 const WatchList = () => {
+  const [stocks, setStocks] = useState(initialWatchlist);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Live stock ticker simulation - gently updates prices to feel like live market
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStocks((prev) => {
+        const randomIndex = Math.floor(Math.random() * prev.length);
+        return prev.map((stock, i) => {
+          if (i !== randomIndex) return stock;
+          const delta = (Math.random() * 2 - 1) * 0.005 * stock.price;
+          const newPrice = Number((stock.price + delta).toFixed(2));
+          const isDown = delta < 0;
+          return {
+            ...stock,
+            price: newPrice,
+            isDown,
+            percent: `${isDown ? "" : "+"}${(delta / stock.price * 100).toFixed(2)}%`,
+          };
+        });
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredStocks = stocks.filter((stock) =>
+    stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const labels = filteredStocks.map((stock) => stock.name);
   const data = {
     labels,
     datasets: [
       {
         label: "Price",
-        data: watchlist.map((stock) => stock.price),
+        data: filteredStocks.map((stock) => stock.price),
         backgroundColor: [
           "rgba(255, 99, 132, 0.5)",
           "rgba(54, 162, 235, 0.5)",
@@ -46,33 +69,6 @@ const WatchList = () => {
     ],
   };
 
-  // export const data = {
-  //   labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-  // datasets: [
-  //   {
-  //     label: "# of Votes",
-  //     data: [12, 19, 3, 5, 2, 3],
-  //     backgroundColor: [
-  //       "rgba(255, 99, 132, 0.2)",
-  //       "rgba(54, 162, 235, 0.2)",
-  //       "rgba(255, 206, 86, 0.2)",
-  //       "rgba(75, 192, 192, 0.2)",
-  //       "rgba(153, 102, 255, 0.2)",
-  //       "rgba(255, 159, 64, 0.2)",
-  //     ],
-  //     borderColor: [
-  //       "rgba(255, 99, 132, 1)",
-  //       "rgba(54, 162, 235, 1)",
-  //       "rgba(255, 206, 86, 1)",
-  //       "rgba(75, 192, 192, 1)",
-  //       "rgba(153, 102, 255, 1)",
-  //       "rgba(255, 159, 64, 1)",
-  //     ],
-  //     borderWidth: 1,
-  //   },
-  // ],
-  // };
-
   return (
     <div className="watchlist-container">
       <div className="search-container">
@@ -80,19 +76,21 @@ const WatchList = () => {
           type="text"
           name="search"
           id="search"
-          placeholder="Search eg:infy, bse, nifty fut weekly, gold mcx"
+          placeholder="Search eg: infy, bse, tcs, reliance"
           className="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <span className="counts"> {watchlist.length} / 50</span>
+        <span className="counts"> {filteredStocks.length} / {stocks.length}</span>
       </div>
 
       <ul className="list">
-        {watchlist.map((stock, index) => {
-          return <WatchListItem stock={stock} key={index} />;
+        {filteredStocks.map((stock, index) => {
+          return <WatchListItem stock={stock} key={stock.name || index} />;
         })}
       </ul>
 
-      <DoughnutChart data={data} />
+      {filteredStocks.length > 0 && <DoughnutChart data={data} />}
     </div>
   );
 };
@@ -102,16 +100,11 @@ export default WatchList;
 const WatchListItem = ({ stock }) => {
   const [showWatchlistActions, setShowWatchlistActions] = useState(false);
 
-  const handleMouseEnter = (e) => {
-    setShowWatchlistActions(true);
-  };
-
-  const handleMouseLeave = (e) => {
-    setShowWatchlistActions(false);
-  };
-
   return (
-    <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <li
+      onMouseEnter={() => setShowWatchlistActions(true)}
+      onMouseLeave={() => setShowWatchlistActions(false)}
+    >
       <div className="item">
         <p className={stock.isDown ? "down" : "up"}>{stock.name}</p>
         <div className="itemInfo">
@@ -121,19 +114,25 @@ const WatchListItem = ({ stock }) => {
           ) : (
             <KeyboardArrowUp className="down" />
           )}
-          <span className="price">{stock.price}</span>
+          <span className="price">₹{stock.price.toFixed(2)}</span>
         </div>
       </div>
-      {showWatchlistActions && <WatchListActions uid={stock.name} />}
+      {showWatchlistActions && (
+        <WatchListActions uid={stock.name} price={stock.price} />
+      )}
     </li>
   );
 };
 
-const WatchListActions = ({ uid }) => {
+const WatchListActions = ({ uid, price }) => {
   const generalContext = useContext(GeneralContext);
 
   const handleBuyClick = () => {
-    generalContext.openBuyWindow(uid);
+    generalContext.openBuyWindow(uid, price);
+  };
+
+  const handleSellClick = () => {
+    generalContext.openSellWindow(uid, price);
   };
 
   return (
@@ -153,8 +152,11 @@ const WatchListActions = ({ uid }) => {
           placement="top"
           arrow
           TransitionComponent={Grow}
+          onClick={handleSellClick}
         >
-          <button className="sell">Sell</button>
+          <button className="sell" style={{ backgroundColor: "#df514c", color: "#fff" }}>
+            Sell
+          </button>
         </Tooltip>
         <Tooltip
           title="Analytics (A)"

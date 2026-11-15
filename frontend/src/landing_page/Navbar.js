@@ -1,14 +1,16 @@
 import React from "react";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+
+const DASHBOARD_URL = process.env.REACT_APP_DASHBOARD_URL || "http://localhost:3002";
 
 function Navbar() {
   return (
     <nav
-      class="navbar navbar-expand-lg border-bottom"
+      className="navbar navbar-expand-lg border-bottom sticky-top"
       style={{ backgroundColor: "#FFF" }}
     >
-      <div class="container p-2">
-        <Link class="navbar-brand" to="/">
+      <div className="container p-2">
+        <Link className="navbar-brand" to="/">
           <img
             src="media/images/logo.svg"
             style={{ width: "25%" }}
@@ -16,7 +18,7 @@ function Navbar() {
           />
         </Link>
         <button
-          class="navbar-toggler"
+          className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarSupportedContent"
@@ -24,35 +26,46 @@ function Navbar() {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <form class="d-flex" role="search">
-            <ul class="navbar-nav mb-lg-0">
-              <li class="nav-item">
-                <Link class="nav-link active" aria-current="page" to="/signup">
+        <div className="collapse navbar-collapse" id="navbarSupportedContent">
+          <form className="d-flex ms-auto" role="search" onSubmit={(e) => e.preventDefault()}>
+            <ul className="navbar-nav mb-lg-0 align-items-center">
+              <li className="nav-item">
+                <Link className="nav-link" to="/signup">
                   Signup
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link class="nav-link active" to="/about">
+              <li className="nav-item">
+                <Link className="nav-link" to="/about">
                   About
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link class="nav-link active" to="/product">
+              <li className="nav-item">
+                <Link className="nav-link" to="/product">
                   Product
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link class="nav-link active" to="/pricing">
+              <li className="nav-item">
+                <Link className="nav-link" to="/pricing">
                   Pricing
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link class="nav-link active" to="/support">
+              <li className="nav-item">
+                <Link className="nav-link" to="/support">
                   Support
-                </Link >
+                </Link>
+              </li>
+              <li className="nav-item ms-lg-2">
+                <a
+                  className="btn btn-primary btn-sm px-3"
+                  href={DASHBOARD_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: "#387ed1", borderColor: "#387ed1" }}
+                >
+                  Kite Dashboard
+                </a>
               </li>
             </ul>
           </form>
@@ -62,4 +75,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;

@@ -219,3 +219,6 @@
     color: #fff;
   }
   
+.btn-red { background: #df514c; color: #fff; }
+.btn-red:hover { background: #c93b36; }
+

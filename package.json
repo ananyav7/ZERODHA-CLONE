@@ -1,0 +1,17 @@
+{
+  "name": "zerodha-clone-monorepo",
+  "version": "1.0.0",
+  "description": "Full-stack Zerodha Clone: Marketing Landing, Kite Trading Dashboard, and Express REST API",
+  "private": true,
+  "scripts": {
+    "start:backend": "npm --prefix backend start",
+    "start:dashboard": "npm --prefix dashboard start",
+    "start:frontend": "npm --prefix frontend start",
+    "seed": "npm --prefix backend run seed",
+    "build:dashboard": "npm --prefix dashboard run build",
+    "build:frontend": "npm --prefix frontend run build"
+  },
+  "keywords": ["zerodha", "kite", "stock-trading", "react", "express", "mongodb"],
+  "author": "",
+  "license": "ISC"
+}
